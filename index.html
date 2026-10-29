@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weekly Goals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Weekly Goals">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --bg:#f3f4fa; --card:#ffffff; --text:#1c1e2b; --muted:#6b6f85; --line:#e4e6f0;
+  --accent:#4f46e5; --accent2:#7c3aed; --accent-soft:#eceafd; --ok:#16a34a; --danger:#dc2626;
+  --shadow:0 1px 2px rgba(20,20,50,.06),0 4px 14px rgba(20,20,50,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0f1117; --card:#181b25; --text:#eceef7; --muted:#9296ad; --line:#272b3a;
+    --accent:#8b83ff; --accent2:#a78bfa; --accent-soft:#25264a; --ok:#4ade80; --danger:#f87171;
+    --shadow:0 1px 2px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh}
+.app{max-width:720px;margin:0 auto;padding:12px 12px 40px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px}
+.nav{display:flex;align-items:center;gap:6px}
+.nav h1{flex:1;margin:0;font-size:16px;font-weight:650;text-align:center;line-height:1.2}
+.nav h1 small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;display:grid;place-items:center;flex:none}
+.pill{height:44px;padding:0 14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-weight:600;flex:none}
+.progress{margin-top:10px;background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.progress .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.progress .row b{color:var(--text);font-size:14px}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .35s ease}
+.bar.done i{background:var(--ok)}
+section.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:10px 10px 8px;margin-top:12px;border:1.5px solid transparent}
+section.card.today{border-color:var(--accent)}
+section.card.dragover{background:var(--accent-soft)}
+section.goals{background:linear-gradient(160deg,var(--accent-soft),var(--card) 70%)}
+.card h2{margin:0 0 4px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;padding:0 4px}
+.card h2 .count{margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0}
+.card h2 .badge{background:var(--accent);color:#fff;border-radius:99px;padding:1px 8px;font-size:11px;letter-spacing:0;text-transform:none}
+ul{list-style:none;margin:0;padding:0}
+li.task{display:flex;align-items:center;gap:2px;min-height:44px;border-radius:10px}
+li.task.dragging{opacity:.4}
+.chk{width:44px;height:44px;flex:none;display:grid;place-items:center}
+.chk span{width:24px;height:24px;border-radius:8px;border:2px solid var(--muted);display:grid;place-items:center;transition:.15s;color:transparent;font-size:15px;font-weight:700}
+.goals .chk span{border-radius:50%}
+.chk[aria-checked=true] span{background:var(--ok);border-color:var(--ok);color:#fff}
+.txt{flex:1;min-width:0;padding:8px 2px;word-break:break-word;cursor:text}
+li.done .txt{color:var(--muted);text-decoration:line-through}
+.act{width:36px;height:44px;flex:none;color:var(--muted);font-size:16px;border-radius:8px;display:grid;place-items:center}
+.act:hover{color:var(--text);background:var(--accent-soft)}
+.act.del:hover{color:var(--danger)}
+@media (hover:hover){ li.task .act{opacity:0} li.task:hover .act,li.task:focus-within .act{opacity:1} }
+input.edit,input.add{flex:1;min-width:0;font:inherit;color:var(--text);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:0 12px;height:44px}
+input.edit{height:40px;margin:2px 0}
+input.add:focus,input.edit:focus{border-color:var(--accent);outline:none}
+.addrow{display:flex;gap:6px;margin-top:4px}
+.addrow button{width:44px;height:44px;border-radius:10px;background:var(--accent);color:#fff;font-size:22px;flex:none}
+.empty{color:var(--muted);font-size:13px;padding:4px 8px 6px}
+.movebar{display:flex;gap:4px;padding:2px 4px 6px 46px;flex-wrap:wrap}
+.movebar button{min-width:44px;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:13px}
+.movebar button.cur{opacity:.4}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tools button{flex:1;min-width:120px;height:44px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-weight:600;font-size:13.5px}
+.tools button.primary{background:var(--accent);color:#fff}
+.note{color:var(--muted);font-size:12px;margin-top:14px;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,80px);background:#22243a;color:#fff;border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;transition:transform .25s;z-index:20;max-width:92vw;font-size:14px}
+#toast.show{transform:translate(-50%,0)}
+#toast button{color:#a9a4ff;font-weight:700;padding:6px}
+@media (min-width:640px){ .days{display:grid;grid-template-columns:1fr 1fr;gap:0 12px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="nav">
+      <button class="icon-btn" id="prev" aria-label="Previous week">‹</button>
+      <h1 id="title">Week<small id="sub"></small></h1>
+      <button class="pill" id="thisweek">Today</button>
+      <button class="icon-btn" id="next" aria-label="Next week">›</button>
+    </div>
+    <div class="progress" id="progress">
+      <div class="row"><span><b id="pct">0%</b> of the week done</span><span id="pcount">0 / 0</span></div>
+      <div class="bar" id="bar"><i></i></div>
+    </div>
+  </header>
+
+  <section class="card goals" id="goalsCard">
+    <h2>★ Weekly goals <span class="count" id="goalCount"></span></h2>
+    <ul id="goalList"></ul>
+    <div class="addrow" id="goalAdd">
+      <input class="add" id="goalInput" placeholder="Add a big goal for the week…" maxlength="200" enterkeyhint="done" aria-label="Add weekly goal">
+      <button id="goalBtn" aria-label="Add goal">+</button>
+    </div>
+  </section>
+
+  <div class="days" id="days"></div>
+
+  <div class="tools">
+    <button class="primary" id="carry">⤳ Carry unfinished to next week</button>
+    <button id="export">⬇ Export</button>
+    <button id="import">⬆ Import</button>
+    <input type="file" id="file" accept="application/json,.json" hidden>
+  </div>
+  <p class="note">Saved on this device only (localStorage). Use Export / Import to move your data to another device.</p>
+</div>
+<div id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastUndo" hidden>Undo</button></div>
+
+<script>
+(() => {
+'use strict';
+const KEY = 'weeklyGoals.v1';
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MAX_GOALS = 5;
+
+// ---------- date helpers (local time) ----------
+const pad = n => String(n).padStart(2,'0');
+const fmtKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+function mondayOf(date){ const d = new Date(date.getFullYear(), date.getMonth(), date.getDate()); const wd = (d.getDay()+6)%7; d.setDate(d.getDate()-wd); return d; }
+function parseKey(k){ const [y,m,d] = k.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d,n){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate()+n); return x; }
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+
+// ---------- state ----------
+let state = load();
+let weekStart = mondayOf(new Date());
+let editingId = null, moveOpenId = null, lastSnapshot = null;
+
+function emptyWeek(){ return {goals:[], days:[[],[],[],[],[],[],[]]}; }
+function normalize(raw){
+  const out = {weeks:{}};
+  if (!raw || typeof raw !== 'object' || typeof raw.weeks !== 'object' || !raw.weeks) return out;
+  for (const [k,w] of Object.entries(raw.weeks)){
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !w) continue;
+    const clean = emptyWeek();
+    const item = t => (t && typeof t.text === 'string') ? {id: String(t.id||uid()), text: t.text.slice(0,300), done: !!t.done} : null;
+    if (Array.isArray(w.goals)) clean.goals = w.goals.map(item).filter(Boolean).slice(0,MAX_GOALS);
+    if (Array.isArray(w.days)) for (let i=0;i<7;i++) if (Array.isArray(w.days[i])) clean.days[i] = w.days[i].map(item).filter(Boolean);
+    out.weeks[k] = clean;
+  }
+  return out;
+}
+function load(){ try { return normalize(JSON.parse(localStorage.getItem(KEY))); } catch(e){ return {weeks:{}}; } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){ toast('Could not save (storage full or blocked)'); } }
+function wk(date = weekStart){ const k = fmtKey(date); return state.weeks[k] || (state.weeks[k] = emptyWeek()); }
+function peek(date){ return state.weeks[fmtKey(date)]; }
+const snap = () => JSON.stringify(state);
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+function el(tag, attrs={}, ...kids){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (k==='class') e.className = v; else if (k==='text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  kids.forEach(c => c && e.append(c)); return e;
+}
+function findTask(id){
+  const w = wk();
+  const gi = w.goals.findIndex(t=>t.id===id); if (gi>=0) return {list:w.goals, i:gi, goal:true};
+  for (let d=0; d<7; d++){ const i = w.days[d].findIndex(t=>t.id===id); if (i>=0) return {list:w.days[d], i, day:d}; }
+  return null;
+}
+let toastTimer;
+function toast(msg, undo){
+  $('toastMsg').textContent = msg;
+  const ub = $('toastUndo'); ub.hidden = !undo; ub.onclick = () => { undo(); hideToast(); };
+  $('toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, undo?6000:2500);
+}
+function hideToast(){ $('toast').classList.remove('show'); }
+function undoable(label, fn){
+  const before = snap(); fn(); save(); render();
+  toast(label, () => { state = normalize(JSON.parse(before)); save(); render(); });
+}
+
+// ---------- actions ----------
+function addTask(day, text){
+  text = text.trim(); if (!text) return;
+  const w = wk();
+  if (day === 'goal'){ if (w.goals.length >= MAX_GOALS){ toast(`Max ${MAX_GOALS} weekly goals — finish or delete one`); return; } w.goals.push({id:uid(), text, done:false}); }
+  else w.days[day].push({id:uid(), text, done:false});
+  save(); render();
+}
+function toggle(id){ const f = findTask(id); if (!f) return; f.list[f.i].done = !f.list[f.i].done; save(); render(); }
+function remove(id){ const f = findTask(id); if (!f) return; undoable('Deleted', () => f.list.splice(f.i,1)); }
+function rename(id, text){ const f = findTask(id); text = text.trim(); if (f && text) f.list[f.i].text = text; editingId = null; save(); render(); }
+function moveTo(id, day){
+  const f = findTask(id); if (!f || f.goal || f.day === day) { moveOpenId = null; render(); return; }
+  const [t] = f.list.splice(f.i,1); wk().days[day].push(t); moveOpenId = null; save(); render();
+}
+function carryOver(){
+  const w = wk(); const unfinished = w.goals.filter(t=>!t.done).length + w.days.reduce((n,d)=>n+d.filter(t=>!t.done).length,0);
+  if (!unfinished){ toast('Nothing unfinished to carry over 🎉'); return; }
+  undoable(`Moved ${unfinished} unfinished item${unfinished>1?'s':''} to next week`, () => {
+    const nx = wk(addDays(weekStart,7)); const cur = wk();
+    const room = MAX_GOALS - nx.goals.length;
+    const gMove = cur.goals.filter(t=>!t.done), gKeep = cur.goals.filter(t=>t.done);
+    nx.goals.push(...gMove.slice(0,Math.max(0,room))); cur.goals = gKeep.concat(gMove.slice(Math.max(0,room)));
+    for (let d=0; d<7; d++){ nx.days[d].push(...cur.days[d].filter(t=>!t.done)); cur.days[d] = cur.days[d].filter(t=>t.done); }
+  });
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify({app:'weekly-goals', version:1, exported:new Date().toISOString(), ...state}, null, 2)], {type:'application/json'});
+  const a = el('a', {href:URL.createObjectURL(blob), download:`weekly-goals-${fmtKey(new Date())}.json`});
+  document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  toast('Exported');
+}
+function importData(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = normalize(JSON.parse(r.result));
+      if (!Object.keys(data.weeks).length) throw new Error('empty');
+      if (!confirm('Replace all data on this device with the imported file?')) return;
+      const before = snap(); state = data; save(); render();
+      toast('Imported', () => { state = normalize(JSON.parse(before)); save(); render(); });
+    } catch(e){ toast('That file is not a valid Weekly Goals export'); }
+  };
+  r.readAsText(file);
+}
+
+// ---------- rendering ----------
+function taskRow(t, kind){
+  const li = el('li', {class:'task'+(t.done?' done':''), 'data-id':t.id});
+  li.append(el('button', {class:'chk', role:'checkbox', 'aria-checked':String(t.done), 'aria-label':'Mark done', onclick:()=>toggle(t.id)}, el('span',{text:'✓'})));
+  if (editingId === t.id){
+    const inp = el('input', {class:'edit', value:t.text, maxlength:'300', 'aria-label':'Edit task'});
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') rename(t.id, inp.value); else if (e.key==='Escape'){ editingId=null; render(); } });
+    inp.addEventListener('blur', () => { if (editingId===t.id) rename(t.id, inp.value); });
+    li.append(inp); setTimeout(()=>{ inp.focus(); inp.select(); }, 0);
+  } else {
+    li.append(el('div', {class:'txt', text:t.text, title:'Click to edit', onclick:()=>{ editingId=t.id; render(); }}));
+    li.append(el('button', {class:'act', 'aria-label':'Edit', onclick:()=>{ editingId=t.id; render(); }, text:'✎'}));
+    if (kind==='day') li.append(el('button', {class:'act', 'aria-label':'Move to another day', onclick:()=>{ moveOpenId = moveOpenId===t.id ? null : t.id; render(); }, text:'⇄'}));
+    li.append(el('button', {class:'act del', 'aria-label':'Delete', onclick:()=>remove(t.id), text:'✕'}));
+  }
+  if (kind==='day'){
+    li.draggable = editingId !== t.id;
+    li.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed='move'; li.classList.add('dragging'); });
+    li.addEventListener('dragend', () => li.classList.remove('dragging'));
+  }
+  return li;
+}
+function render(){
+  const w = wk();
+  const end = addDays(weekStart,6);
+  const m = d => d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const thisMon = mondayOf(new Date());
+  const diff = Math.round((weekStart - thisMon)/604800000);
+  $('title').firstChild.nodeValue = diff===0 ? 'This week' : diff===1 ? 'Next week' : diff===-1 ? 'Last week' : 'Week of '+m(weekStart);
+  $('sub').textContent = `${m(weekStart)} – ${m(end)}, ${end.getFullYear()}`;
+  $('thisweek').style.visibility = diff===0 ? 'hidden' : 'visible';
+  $('thisweek').textContent = 'This week';
+  document.title = 'Weekly Goals';
+
+  // goals
+  const gl = $('goalList'); gl.replaceChildren();
+  w.goals.forEach(t => gl.append(taskRow(t,'goal')));
+  if (!w.goals.length) gl.append(el('li',{class:'empty',text:'Pick 3–5 big things you want to finish this week.'}));
+  $('goalCount').textContent = `${w.goals.filter(t=>t.done).length}/${w.goals.length} · max ${MAX_GOALS}`;
+  $('goalAdd').style.display = w.goals.length >= MAX_GOALS ? 'none' : 'flex';
+
+  // days
+  const days = $('days'); days.replaceChildren();
+  const todayKey = fmtKey(new Date());
+  for (let d=0; d<7; d++){
+    const date = addDays(weekStart,d), isToday = fmtKey(date)===todayKey;
+    const list = w.days[d];
+    const sec = el('section', {class:'card'+(isToday?' today':''), 'data-day':String(d)});
+    const h = el('h2', {}, el('span',{text:`${DAYS[d]} ${date.getDate()}`}));
+    if (isToday) h.append(el('span',{class:'badge',text:'Today'}));
+    h.append(el('span',{class:'count',text: list.length ? `${list.filter(t=>t.done).length}/${list.length}` : ''}));
+    sec.append(h);
+    const ul = el('ul');
+    list.forEach(t => {
+      ul.append(taskRow(t,'day'));
+      if (moveOpenId === t.id){
+        const bar = el('div',{class:'movebar',role:'group','aria-label':'Move to'});
+        SHORT.forEach((s,i)=> bar.append(el('button',{class:i===d?'cur':'',text:s,onclick:()=>moveTo(t.id,i)})));
+        ul.append(bar);
+      }
+    });
+    sec.append(ul);
+    const inp = el('input',{class:'add',placeholder:'Add a task…',maxlength:'300',enterkeyhint:'done','aria-label':`Add task for ${DAYS[d]}`,'data-add':String(d)});
+    const submit = () => { const v = inp.value; if (!v.trim()) return; const keep = d; addTask(keep, v); const n = document.querySelector(`[data-add="${keep}"]`); n && n.focus(); };
+    inp.addEventListener('keydown', e => { if (e.key==='Enter' && !e.isComposing) submit(); });
+    sec.append(el('div',{class:'addrow'}, inp, el('button',{'aria-label':`Add task for ${DAYS[d]}`,onclick:submit,text:'+'})));
+    // drop target
+    sec.addEventListener('dragover', e => { e.preventDefault(); sec.classList.add('dragover'); });
+    sec.addEventListener('dragleave', () => sec.classList.remove('dragover'));
+    sec.addEventListener('drop', e => { e.preventDefault(); sec.classList.remove('dragover'); const id = e.dataTransfer.getData('text/plain'); if (id) moveTo(id, d); });
+    days.append(sec);
+  }
+
+  // progress
+  const all = [...w.goals, ...w.days.flat()];
+  const done = all.filter(t=>t.done).length;
+  const pct = all.length ? Math.round(done/all.length*100) : 0;
+  $('pct').textContent = pct+'%'; $('pcount').textContent = `${done} / ${all.length} items`;
+  $('bar').firstElementChild.style.width = pct+'%'; $('bar').classList.toggle('done', all.length>0 && pct===100);
+}
+
+// ---------- wiring ----------
+$('prev').onclick = () => { weekStart = addDays(weekStart,-7); moveOpenId=null; render(); };
+$('next').onclick = () => { weekStart = addDays(weekStart,7); moveOpenId=null; render(); };
+$('thisweek').onclick = () => { weekStart = mondayOf(new Date()); moveOpenId=null; render(); };
+$('carry').onclick = carryOver;
+$('export').onclick = exportData;
+$('import').onclick = () => $('file').click();
+$('file').onchange = e => { const f = e.target.files[0]; if (f) importData(f); e.target.value=''; };
+const gi = $('goalInput');
+const addGoal = () => { if (!gi.value.trim()) return; addTask('goal', gi.value); gi.value=''; const n=$('goalInput'); n && n.focus(); };
+gi.addEventListener('keydown', e => { if (e.key==='Enter' && !e.isComposing) addGoal(); });
+$('goalBtn').onclick = addGoal;
+window.addEventListener('storage', e => { if (e.key===KEY){ state = load(); render(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ const m = mondayOf(new Date()); if (fmtKey(m) !== fmtKey(window.__lastMon||m)) weekStart = m; window.__lastMon = m; render(); } });
+window.__lastMon = mondayOf(new Date());
+
+render();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
